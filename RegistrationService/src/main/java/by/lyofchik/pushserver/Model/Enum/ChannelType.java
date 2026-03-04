@@ -1,4 +1,4 @@
-package by.lyofchik.pushserver.Model.Entities;
+package by.lyofchik.pushserver.Model.Enum;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

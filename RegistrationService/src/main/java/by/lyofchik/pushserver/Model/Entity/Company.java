@@ -1,4 +1,4 @@
-package by.lyofchik.pushserver.Model.Entities;
+package by.lyofchik.pushserver.Model.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "companies")
+@Table(name = "companies", schema = "dbo")
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,4 +16,6 @@ public class Company {
 
     @Column(name = "company_name", nullable = false, length = 50)
     private String companyName;
+
+
 }

@@ -10,13 +10,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "users", schema = "dbo")
-public class User {
+@Table(name = "templates", schema = "dbo")
+public class Template {
     @Id
-    @Column(name = "login", nullable = false, length = 50)
-    private String login;
+    @Column(name = "template_name", nullable = false, length = 50)
+    private String templateName;
+
+    @Column(name = "title", length = 100)
+    private String title;
+
+    @Column(name = "body", length = 512)
+    private String body;
 
     @Column(name = "company_id", nullable = false)
     private Integer company;
+
 
 }

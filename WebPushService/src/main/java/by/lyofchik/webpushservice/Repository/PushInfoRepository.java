@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface PushInfoRepository extends JpaRepository<PushInfo, Integer> {
     PushInfo findById(int id);
-    List<PushInfo> findPushInfoByBatchId(int butchId);
+    List<PushInfo> findPushInfoByBatch(int butchId);
 }

@@ -1,6 +1,6 @@
-package by.lyofchik.pushserver.Model.Entities;
+package by.lyofchik.webpushservice.Model.Enum;
 
-public enum Status {
+public enum PushStatus {
     RECEIVED,
     SENT,
     DELIVERED,

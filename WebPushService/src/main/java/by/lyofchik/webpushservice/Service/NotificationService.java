@@ -1,9 +1,12 @@
 package by.lyofchik.webpushservice.Service;
 
 import by.lyofchik.webpushservice.Model.DTO.NotificationRequest;
+import by.lyofchik.webpushservice.Model.Entity.Batch;
 import by.lyofchik.webpushservice.Model.Entity.PushInfo;
-import by.lyofchik.webpushservice.Model.Enum.Status;
+import by.lyofchik.webpushservice.Model.Enum.BatchStatus;
+import by.lyofchik.webpushservice.Model.Enum.PushStatus;
 import by.lyofchik.webpushservice.Model.Mapper.SubscriptionMapper;
+import by.lyofchik.webpushservice.Repository.BatchRepository;
 import by.lyofchik.webpushservice.Repository.PushInfoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.*;
@@ -32,6 +35,7 @@ public class NotificationService {
     private final ObjectMapper objectMapper;
     private final SubscriptionMapper subscriptionMapper;
     private final PushInfoRepository pushInfoRepository;
+    private final BatchRepository batchRepository;
 
     @PostConstruct
     void init() throws GeneralSecurityException {
@@ -42,6 +46,13 @@ public class NotificationService {
     @Async("push_executor")
     public void sendPush(NotificationRequest request) {
         try {
+            Batch batch = batchRepository.findById(request.getBatchId());
+            if (batch == null) return;
+            if (batch.getStatus() == BatchStatus.CANCELLED){
+                log.info("Cancelling push request={}", request);
+                return;
+            }
+
             log.info("Start sending push - {}", Thread.currentThread().getName());
             Subscription subscription = subscriptionMapper.toWebPushSubscription(request.getSubscription());
             String payload = objectMapper.writeValueAsString(request.getPayload());
@@ -56,13 +67,13 @@ public class NotificationService {
             var response = pushService.send(notification);
             log.info("Push sending result: {}", response);
 
-            PushInfo pushInfo = pushInfoRepository.getReferenceById(request.getPushId());
+            PushInfo pushInfo = pushInfoRepository.findById(request.getPushId());
             if(response.getStatusLine().getStatusCode() < 300){
-                pushInfo.setStatus(Status.SENT);
+                pushInfo.setStatus(PushStatus.SENT);
                 pushInfoRepository.save(pushInfo);
                 log.info("Push sent successfully={}", pushInfo);
             }else {
-                pushInfo.setStatus(Status.SENDING_ERROR);
+                pushInfo.setStatus(PushStatus.SENDING_ERROR);
                 pushInfoRepository.save(pushInfo);
                 log.info("Push sent with error={}", pushInfo);
             }

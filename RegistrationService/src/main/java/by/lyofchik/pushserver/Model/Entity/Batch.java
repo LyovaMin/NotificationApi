@@ -1,7 +1,10 @@
-package by.lyofchik.webpushservice.Model.Entity;
+package by.lyofchik.pushserver.Model.Entity;
 
-import by.lyofchik.webpushservice.Model.Enum.BatchStatus;
-import jakarta.persistence.*;
+import by.lyofchik.pushserver.Model.Enum.BatchStatus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

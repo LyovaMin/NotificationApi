@@ -1,7 +1,6 @@
 package by.lyofchik.webpushservice.Repository;
 
 import by.lyofchik.webpushservice.Model.Entity.SubscriptionEntity;
-import by.lyofchik.webpushservice.Model.Entity.User;
 import by.lyofchik.webpushservice.Model.Enum.ChannelType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface SubscriptionRepository extends JpaRepository<SubscriptionEntity, Integer> {
-    List<SubscriptionEntity> findSubscriptionEntitiesByUserAndChannelType(User user, ChannelType channelType);
+    List<SubscriptionEntity> findSubscriptionEntitiesByUserLoginAndChannelType(String login, ChannelType channelType);
 }

@@ -1,5 +1,6 @@
-package by.lyofchik.pushserver.Model.Entities;
+package by.lyofchik.pushserver.Model.Entity;
 
+import by.lyofchik.pushserver.Model.Enum.PushStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "push_info")
+@Table(name = "push_info", schema = "dbo")
 public class PushInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,15 +16,16 @@ public class PushInfo {
     private Integer id;
 
     @Column(name = "push_payload", length = 512)
-    private String payload;
+    private String pushPayload;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_login", nullable = false)
-    private User userLogin;
+    @Column(name = "user_login", nullable = false)
+    private String userLogin;
 
     @Column(name = "status", nullable = false, length = 15)
-    private Status status;
+    private PushStatus status;
 
     @Column(name = "batch_id", nullable = false)
-    private Integer batchId;
+    private Integer batch;
+
+
 }

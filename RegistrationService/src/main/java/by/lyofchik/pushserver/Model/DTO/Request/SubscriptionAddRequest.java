@@ -1,7 +1,7 @@
 package by.lyofchik.pushserver.Model.DTO.Request;
 
 import by.lyofchik.pushserver.Model.DTO.SubscriptionDto;
-import by.lyofchik.pushserver.Model.Entities.ChannelType;
+import by.lyofchik.pushserver.Model.Enum.ChannelType;
 import lombok.Getter;
 
 @Getter

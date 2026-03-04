@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "subscriptions")
+@Table(name = "subscriptions", schema = "dbo")
 public class SubscriptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +21,8 @@ public class SubscriptionEntity {
     @Column(name = "endpoint", nullable = false, length = 512)
     private String endpoint;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_login", nullable = false)
-    private User userLogin;
+    @Column(name = "user_login", nullable = false, length = 50)
+    private String userLogin;
 
     @Column(name = "auth_key")
     private String authKey;
@@ -39,7 +38,6 @@ public class SubscriptionEntity {
 
     @ColumnDefault("1")
     @Column(name = "is_active", columnDefinition = "tinyint")
-    private boolean isActive;
-
+    private Boolean isActive;
 
 }

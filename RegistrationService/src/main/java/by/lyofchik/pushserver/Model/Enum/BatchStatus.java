@@ -1,4 +1,4 @@
-package by.lyofchik.webpushservice.Model.Enum;
+package by.lyofchik.pushserver.Model.Enum;
 
 public enum BatchStatus {
     OK,

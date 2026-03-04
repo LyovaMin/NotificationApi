@@ -1,4 +1,4 @@
-package by.lyofchik.webpushservice.Model.Entity;
+package by.lyofchik.pushserver.Model.Entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
