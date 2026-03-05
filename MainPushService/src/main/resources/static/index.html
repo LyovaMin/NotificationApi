@@ -1,10 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Push Sender</title>
 </head>
 <body>
+<h2>Отправка Push-уведомлений всем пользователям</h2>
 
+<form id="pushForm">
+    <div>
+        <label>Batch ID: <input type="number" id="batchId" value="1"></label>
+    </div><br>
+
+    <div>
+        <label>Company ID: <input type="number" id="companyId" value="101"></label>
+    </div><br>
+
+    <div>
+        <label>Channel Type:
+            <select id="channelType">
+                <option value="WEB">WEB</option>
+                <option value="MOBILE">MOBILE</option>
+            </select>
+        </label>
+    </div><br>
+
+    <fieldset>
+        <legend>Payload (Данные уведомления)</legend>
+        <div>
+            <label>Title: <input type="text" id="title" value="Заголовок"></label>
+        </div>
+        <div>
+            <label>Body: <input type="text" id="body" value="Текст сообщения"></label>
+        </div>
+        <div>
+            <label>Icon: <input type="text" id="icon" value="icon.png"></label>
+        </div>
+        <div>
+            <label>URL: <input type="text" id="url" value="/"></label>
+        </div>
+    </fieldset><br>
+
+    <div>
+        <label>TTL (в секундах): <input type="number" id="ttl" value="3600"></label>
+    </div><br>
+
+    <button type="button" id="sendBtn">Отправить Push</button>
+</form>
+
+<hr>
+<div id="status"></div>
+
+<script src="script.js"></script>
 </body>
 </html>

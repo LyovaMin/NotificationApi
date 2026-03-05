@@ -18,6 +18,7 @@ import by.lyofchik.mainpushservice.Repository.PushInfoRepository;
 import by.lyofchik.mainpushservice.Repository.SubscriptionRepository;
 import by.lyofchik.mainpushservice.Repository.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class SendingService {
     KafkaProducer kafkaProducer;
     UserRepository userRepository;
@@ -35,14 +37,24 @@ public class SendingService {
     BatchRepository batchRepository;
 
     public Response sendPushToSingleUser(NotificationRequest request){
-        if(request == null) return Response.error();
+        log.info("sendPushToSingleUser - {}", request);
+        if(request == null) {
+            log.error("sendPushToSingleUser - request is null");
+            return Response.error();
+        }
 
         User user = userRepository.findUserByLogin(request.getUserLogin());
-        if(user == null) return Response.error();
+        if(user == null){
+            log.error("sendPushToSingleUser - user not found");
+            return Response.error();
+        }
 
         List<SubscriptionEntity> subscriptions = subscriptionRepository
                 .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
-        if(subscriptions == null) return Response.error();
+        if(subscriptions == null) {
+            log.error("sendPushToSingleUser - subscriptions is null");
+            return Response.error();
+        }
 
         PushInfo pushInfo = pushInfoMapper.toPushInfo(request);
         pushInfoRepository.save(pushInfo);
@@ -59,13 +71,20 @@ public class SendingService {
     }
 
     public Response sendListPushes(NotificationsListRequest request){
-        if(request == null) return Response.error();
+        log.info("Sending list pushes - {}", request);
+        if(request == null) {
+            log.error("sendListPushes - request is null");
+            return Response.error();
+        }
 
         List<User> users = request.getUsersLoginList()
                 .stream()
                 .map(userRepository::findUserByLogin)
                 .toList();
-        if (users.isEmpty()) return Response.error();
+        if (users.isEmpty()) {
+            log.error("sendListPushes - users is empty");
+            return Response.error();
+        }
 
         List<PushInfo> pushInfos = new ArrayList<>();
 
@@ -88,10 +107,17 @@ public class SendingService {
     }
 
     public Response sendAllPushes(AllNotificationsRequest request){
-        if(request == null) return Response.error();
+        log.info("sendAllPushes - {}", request);
+        if(request == null) {
+            log.error("sendAllPushes - request is null");
+            return Response.error();
+        }
 
         List<User> users = userRepository.findUsersByCompany(request.getCompanyId());
-        if (users.isEmpty()) return Response.error();
+        if (users.isEmpty()) {
+            log.error("sendAllPushes - users is empty");
+            return Response.error();
+        }
 
         List<PushInfo> pushInfos = new ArrayList<>();
 
@@ -114,8 +140,12 @@ public class SendingService {
     }
 
     public Response cancelPushes(CancelRequest request) {
+        log.info("cancelPushes - {}", request);
         Batch batch = batchRepository.findById(request.getBatchId());
-        if (batch == null) return Response.error();
+        if (batch == null) {
+            log.error("cancelPushes - batch is null");
+            return Response.error();
+        }
         batch.setStatus(BatchStatus.CANCELLED);
         batchRepository.save(batch);
 

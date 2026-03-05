@@ -2,12 +2,23 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Web Push Demo</title>
+    <title>Web Push Client</title>
 </head>
 <body>
-<h1>Управление Push-уведомлениями</h1>
-<button id="subscribeBtn">Подписаться</button>
-<button id="unsubscribeBtn" style="display:none;">Отписаться</button>
+<h1>Управление уведомлениями</h1>
+
+<div id="auth-section">
+    <label for="loginInput">Ваш логин: </label>
+    <input type="text" id="loginInput" placeholder="Введите логин...">
+</div>
+<br>
+
+<div id="actions">
+    <button id="subscribeBtn">Подписаться</button>
+    <button id="unsubscribeBtn" style="display:none;">Отписаться</button>
+</div>
+
+<p id="status"></p>
 
 <script src="app.js"></script>
 </body>
