@@ -1,15 +1,13 @@
-package by.lyofchik.pushserver.Model.Entity;
+package by.lyofchik.webpushservice.Model.Entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "companies", schema = "dbo")
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
