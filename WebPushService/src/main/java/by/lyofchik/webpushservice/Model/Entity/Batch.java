@@ -18,6 +18,7 @@ public class Batch {
     @Column(name = "batch_id", nullable = false)
     private Integer id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 10)
     private BatchStatus status;
 

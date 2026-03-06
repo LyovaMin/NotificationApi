@@ -21,6 +21,7 @@ public class PushInfo {
     @Column(name = "user_login", nullable = false)
     private String userLogin;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 15)
     private PushStatus status;
 

@@ -36,6 +36,7 @@ public class SendingService {
     PushInfoMapper pushInfoMapper;
     BatchRepository batchRepository;
 
+    //todo single push with api
     public Response sendPushToSingleUser(NotificationRequest request){
         log.info("sendPushToSingleUser - {}", request);
         if(request == null) {
@@ -56,18 +57,19 @@ public class SendingService {
             return Response.error();
         }
 
-        PushInfo pushInfo = pushInfoMapper.toPushInfo(request);
-        pushInfoRepository.save(pushInfo);
+        Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
+        batchRepository.save(batch);
+        List<PushInfo> pushInfos = new ArrayList<>();
 
         subscriptions.forEach(s -> {
+            PushInfo pushInfo = pushInfoMapper.toPushInfo(request);
+            pushInfoRepository.save(pushInfo);
+            pushInfos.add(pushInfo);
             NotificationResponse response = notificationMapper.toResponse(request, s, pushInfo.getId());
             kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
 
-        Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
-        batchRepository.save(batch);
-
-        return Response.success(pushInfo);
+        return Response.success(pushInfos);
     }
 
     public Response sendListPushes(NotificationsListRequest request){
@@ -86,6 +88,8 @@ public class SendingService {
             return Response.error();
         }
 
+        Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
+        batchRepository.save(batch);
         List<PushInfo> pushInfos = new ArrayList<>();
 
         users.forEach(user -> {
@@ -100,8 +104,6 @@ public class SendingService {
                 kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
             });
         });
-        Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
-        batchRepository.save(batch);
 
         return Response.success(pushInfos);
     }
@@ -126,11 +128,11 @@ public class SendingService {
         users.forEach(user -> {
             List<SubscriptionEntity> subscriptions = subscriptionRepository
                     .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
-            PushInfo pushInfo = pushInfoMapper.toPushInfo(request, user);
-            pushInfoRepository.save(pushInfo);
-            pushInfos.add(pushInfo);
 
             subscriptions.forEach(s -> {
+                PushInfo pushInfo = pushInfoMapper.toPushInfo(request, user);
+                pushInfoRepository.save(pushInfo);
+                pushInfos.add(pushInfo);
                 NotificationResponse response = notificationMapper.toResponse(request, s, pushInfo.getId());
                 kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
             });
