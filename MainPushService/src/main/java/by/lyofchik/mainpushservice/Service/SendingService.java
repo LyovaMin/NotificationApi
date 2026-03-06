@@ -119,6 +119,8 @@ public class SendingService {
             return Response.error();
         }
 
+        Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
+        batchRepository.save(batch);
         List<PushInfo> pushInfos = new ArrayList<>();
 
         users.forEach(user -> {
@@ -133,8 +135,6 @@ public class SendingService {
                 kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
             });
         });
-        Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
-        batchRepository.save(batch);
 
         return Response.success(pushInfos);
     }

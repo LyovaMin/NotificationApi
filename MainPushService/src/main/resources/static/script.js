@@ -16,7 +16,7 @@ document.getElementById('sendBtn').onclick = async () => {
     };
 
     try {
-        const response = await fetch('/sendPushToAllUsers', {
+        const response = await fetch('/api/sendPushToAllUsers', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
