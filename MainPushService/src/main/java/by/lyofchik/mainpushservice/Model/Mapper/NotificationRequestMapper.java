@@ -9,23 +9,25 @@ import by.lyofchik.mainpushservice.Model.Entity.SubscriptionEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.UUID;
+
 @Mapper(componentModel = "spring")
 public interface NotificationRequestMapper {
 
     @Mapping(source = "request.payload", target = "payload")
     @Mapping(source = "request.ttl", target = "ttl")
     @Mapping(source = "subscription", target = "subscription")
-    NotificationResponse toResponse(NotificationRequest request, SubscriptionEntity subscription, int pushId);
+    NotificationResponse toResponse(NotificationRequest request, SubscriptionEntity subscription, UUID pushId);
 
     @Mapping(source = "request.payload", target = "payload")
     @Mapping(source = "request.ttl", target = "ttl")
     @Mapping(source = "subscription", target = "subscription")
-    NotificationResponse toResponse(NotificationsListRequest request, SubscriptionEntity subscription, int pushId);
+    NotificationResponse toResponse(NotificationsListRequest request, SubscriptionEntity subscription, UUID pushId);
 
     @Mapping(source = "request.payload", target = "payload")
     @Mapping(source = "request.ttl", target = "ttl")
     @Mapping(source = "subscription", target = "subscription")
-    NotificationResponse toResponse(AllNotificationsRequest request, SubscriptionEntity subscription, int pushId);
+    NotificationResponse toResponse(AllNotificationsRequest request, SubscriptionEntity subscription, UUID pushId);
 
     @Mapping(source = "entity.authKey", target = "auth")
     SubscriptionDto mapToSubscriptionDto(SubscriptionEntity entity);

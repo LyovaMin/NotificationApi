@@ -5,12 +5,14 @@ import by.lyofchik.mainpushservice.Model.DTO.SubscriptionDto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Builder
 @Data
 public class NotificationResponse {
     SubscriptionDto subscription;
     PushPayload payload;
     private int ttl;
-    private int pushId;
+    private UUID pushId;
     private int batchId;
 }

@@ -6,5 +6,6 @@ public enum PushStatus {
     DELIVERED,
     READ,
     DISMISSED,
-    SENDING_ERROR
+    SENDING_ERROR,
+    CANCELED
 }
