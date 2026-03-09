@@ -1,5 +1,6 @@
 package by.lyofchik.webpushservice.Service;
 
+import by.lyofchik.webpushservice.Component.StatusCollector;
 import by.lyofchik.webpushservice.Model.DTO.NotificationRequest;
 import by.lyofchik.webpushservice.Model.Entity.Batch;
 import by.lyofchik.webpushservice.Model.Entity.PushInfo;
@@ -36,6 +37,7 @@ public class NotificationService {
     private final SubscriptionMapper subscriptionMapper;
     private final PushInfoRepository pushInfoRepository;
     private final BatchRepository batchRepository;
+    private final StatusCollector statusCollector;
 
     @PostConstruct
     void init() throws GeneralSecurityException {
@@ -47,9 +49,13 @@ public class NotificationService {
     public void sendPush(NotificationRequest request) {
         try {
             Batch batch = batchRepository.findById(request.getBatchId());
-            if (batch == null) return;
+            if (batch == null) {
+                log.info("Batch not found");
+                return;
+            }
             if (batch.getStatus() == BatchStatus.CANCELLED){
                 log.info("Cancelling push request={}", request);
+                statusCollector.collect(request.getPushId(), PushStatus.CANCELED);
                 return;
             }
 
@@ -69,16 +75,15 @@ public class NotificationService {
 
             PushInfo pushInfo = pushInfoRepository.findById(request.getPushId());
             if(response.getStatusLine().getStatusCode() < 300){
-                pushInfo.setStatus(PushStatus.SENT);
-                pushInfoRepository.save(pushInfo);
+                statusCollector.collect(request.getPushId(), PushStatus.SENT);
                 log.info("Push sent successfully={}", pushInfo);
             }else {
-                pushInfo.setStatus(PushStatus.SENDING_ERROR);
-                pushInfoRepository.save(pushInfo);
+                statusCollector.collect(request.getPushId(), PushStatus.SENDING_ERROR);
                 log.info("Push sent with error={}", pushInfo);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
         }
     }
+
 }

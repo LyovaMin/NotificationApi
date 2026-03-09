@@ -2,13 +2,9 @@ package by.lyofchik.webpushservice.Model.Entity;
 
 import by.lyofchik.webpushservice.Model.Enum.BatchStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
