@@ -1,8 +1,8 @@
 package by.lyofchik.registrationservice.Model.DTO.Request;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class SubscriptionDeleteRequest {
     private String userLogin;
     private String subscriptionEndpoint;

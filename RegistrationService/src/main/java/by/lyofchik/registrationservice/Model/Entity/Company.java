@@ -3,8 +3,7 @@ package by.lyofchik.registrationservice.Model.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "companies", schema = "dbo")
 @Builder

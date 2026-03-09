@@ -2,11 +2,11 @@ package by.lyofchik.registrationservice.Model.Entity;
 
 import by.lyofchik.registrationservice.Model.Enum.PushStatus;
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "push_info", schema = "dbo")
 public class PushInfo {
