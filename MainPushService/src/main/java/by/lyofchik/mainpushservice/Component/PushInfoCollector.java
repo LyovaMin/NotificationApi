@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
@@ -24,6 +25,8 @@ public class PushInfoCollector {
     private PushDtoMapper pushDtoMapper;
     private PushInfoRepository pushInfoRepository;
     private final Queue<PushDTO> queue = new ConcurrentLinkedQueue<>();
+    private static final int BATCH_SIZE = 1000;
+    private static final int MAX_BATCHES = 10;
 
     public void collect(AllNotificationsRequest request, String userLogin, UUID id) {
         PushDTO pushDTO = pushDtoMapper.toPushDTO(request, userLogin, id);
@@ -40,16 +43,39 @@ public class PushInfoCollector {
         queue.add(pushDTO);
     }
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 1000)
     public void sendToDB() {
         if (queue.isEmpty()) return;
+        int batchesCount = 0;
 
         log.info("Sending push infos to DB - {}", queue.size());
 
-        List<PushInfo> pushInfos = queue.stream()
-                .map(pushDtoMapper::toPushInfo)
-                .toList();
+        while (!queue.isEmpty() && batchesCount < MAX_BATCHES) {
+            List<PushDTO> batch = new ArrayList<>();
 
-        pushInfoRepository.saveAll(pushInfos);
+            while (batch.size() < BATCH_SIZE) {
+                PushDTO pushDTO = queue.poll();
+                if (pushDTO == null) break;
+                batch.add(pushDTO);
+            }
+
+            if (!batch.isEmpty()) {
+                saveBatch(batch);
+                batchesCount++;
+            }
+        }
+    }
+
+    private void saveBatch(List<PushDTO> batch) {
+        try{
+            List<PushInfo> list = batch.stream()
+                    .map(pushDtoMapper::toPushInfo)
+                    .toList();
+
+            pushInfoRepository.saveAll(list);
+        } catch (Exception e){
+            log.error("Ошибка сохранения в бд - {}",e.getMessage());
+            queue.addAll(batch);
+        }
     }
 }

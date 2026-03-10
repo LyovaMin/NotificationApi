@@ -18,20 +18,20 @@ public interface PushDtoMapper {
     @Mapping(target = "userLogin", source = "userLogin")
     @Mapping(target = "batch", source = "request.batchId")
     @Mapping(target = "pushPayload", expression = "java(request.getPayload().toJson())")
-    @Mapping(target = "status", constant = "SENT")
+    @Mapping(target = "status", constant = "RECEIVED")
     PushDTO toPushDTO(AllNotificationsRequest request, String userLogin, UUID id);
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "userLogin", source = "userLogin")
     @Mapping(target = "batch", source = "request.batchId")
     @Mapping(target = "pushPayload", expression = "java(request.getPayload().toJson())")
-    @Mapping(target = "status", constant = "SENT")
+    @Mapping(target = "status", constant = "RECEIVED")
     PushDTO toPushDTO(NotificationsListRequest request, String userLogin, UUID id);
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "userLogin", source = "userLogin")
     @Mapping(target = "batch", source = "request.batchId")
     @Mapping(target = "pushPayload", expression = "java(request.getPayload().toJson())")
-    @Mapping(target = "status", constant = "SENT")
+    @Mapping(target = "status", constant = "RECEIVED")
     PushDTO toPushDTO(NotificationRequest request, String userLogin, UUID id);
 }
