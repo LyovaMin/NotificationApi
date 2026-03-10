@@ -18,24 +18,46 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class StatusCollector {
     private PushInfoRepository pushInfoRepository;
     private final Queue<StatusDto> queue = new ConcurrentLinkedQueue<>();
+    private static final int BATCH_SIZE = 1000;
+    private static final int MAX_BATCHES = 10;
 
     public void collect(UUID pushId, PushStatus status) {
         StatusDto statusDto = new StatusDto(pushId, status);
         queue.add(statusDto);
     }
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 1000)
     private void sendToDB() {
         if (queue.isEmpty()) return;
 
-        List<PushInfo> pushInfos = new ArrayList<>();
-        while (!queue.isEmpty()) {
-            StatusDto statusDto = queue.poll();
-            PushInfo pushInfo = pushInfoRepository.findById(statusDto.getPushId());
-            pushInfo.setStatus(statusDto.getStatus());
-            pushInfos.add(pushInfo);
-        }
+        int batchCount = 0;
 
-        pushInfoRepository.saveAll(pushInfos);
+        while (!queue.isEmpty() && batchCount < MAX_BATCHES) {
+            List<StatusDto> batch = new ArrayList<>();
+
+            while (batch.size() < BATCH_SIZE) {
+                StatusDto dto = queue.poll();
+                if (dto == null) break;
+                batch.add(dto);
+            }
+
+            if (!batch.isEmpty()) {
+                saveBatch(batch);
+                batchCount++;
+            }
+        }
+    }
+
+    private void saveBatch(List<StatusDto> batch) {
+        try {
+            List<PushInfo> pushInfos = new ArrayList<>();
+            for (StatusDto statusDto : batch) {
+                pushInfos.add(pushInfoRepository.findById(statusDto.getPushId()));
+            }
+            pushInfoRepository.saveAll(pushInfos);
+        }  catch (Exception e) {
+            queue.addAll(batch);
+            log.error("Ошибка отправки в бд - {}", e.getMessage());
+        }
     }
 }
