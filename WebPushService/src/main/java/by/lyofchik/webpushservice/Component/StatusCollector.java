@@ -55,9 +55,10 @@ public class StatusCollector {
                 pushInfos.add(pushInfoRepository.findById(statusDto.getPushId()));
             }
             pushInfoRepository.saveAll(pushInfos);
+            log.info("Pushes saved successfully, current queue size - {}", queue.size());
         }  catch (Exception e) {
+            log.error("Error saving pushes - {}", e.getMessage());
             queue.addAll(batch);
-            log.error("Ошибка отправки в бд - {}", e.getMessage());
         }
     }
 }
