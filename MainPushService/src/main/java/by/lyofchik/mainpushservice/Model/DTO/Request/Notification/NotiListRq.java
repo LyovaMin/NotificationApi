@@ -1,18 +1,17 @@
 package by.lyofchik.mainpushservice.Model.DTO.Request.Notification;
 
-import by.lyofchik.mainpushservice.Model.Enum.BatchStatus;
-import by.lyofchik.mainpushservice.Model.Enum.NotificationPriority;
 import by.lyofchik.mainpushservice.Model.DTO.PushPayload;
 import by.lyofchik.mainpushservice.Model.Enum.ChannelType;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class NotificationRequest {
-    private String userLogin;
+public class NotiListRq {
     private int batchId;
-    private int companyId;
     private PushPayload payload;
     private ChannelType channelType;
-    private Integer ttl;
-//    private NotificationPriority priority;
+    private List<String> usersLoginList;
+    private int companyId;
+    private int ttl;
 }

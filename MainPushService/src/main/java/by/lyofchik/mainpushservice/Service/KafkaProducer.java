@@ -1,6 +1,6 @@
 package by.lyofchik.mainpushservice.Service;
 
-import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotificationResponse;
+import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotiRs;
 import by.lyofchik.mainpushservice.Model.Enum.ChannelType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Slf4j
 public class KafkaProducer {
-    private final KafkaTemplate<String, NotificationResponse> kafkaTemplate;
+    private final KafkaTemplate<String, NotiRs> kafkaTemplate;
 
     @Async("executor")
-    public void sendNotificationToKafka(ChannelType channelType, NotificationResponse response){
+    public void sendNotificationToKafka(ChannelType channelType, NotiRs response){
         kafkaTemplate.send(
                 channelType.getTopicName(),
                 response.getSubscription().getEndpoint(),

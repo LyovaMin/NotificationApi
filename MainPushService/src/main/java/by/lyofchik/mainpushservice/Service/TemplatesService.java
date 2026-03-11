@@ -1,6 +1,6 @@
 package by.lyofchik.mainpushservice.Service;
 
-import by.lyofchik.mainpushservice.Model.DTO.Request.Templates.TemplatesRequest;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Templates.TemplatesRq;
 import by.lyofchik.mainpushservice.Model.DTO.Response.Response;
 import by.lyofchik.mainpushservice.Repository.TemplateRepository;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class TemplatesService {
     TemplateRepository templateRepository;
 
-    public Response templates(TemplatesRequest request) {
+    public Response templates(TemplatesRq request) {
 
 
         return Response.success();

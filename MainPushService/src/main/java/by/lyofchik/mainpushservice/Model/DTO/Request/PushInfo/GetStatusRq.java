@@ -1,9 +1,8 @@
 package by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo;
 
 import lombok.Data;
-import lombok.Getter;
 
 @Data
-public class PushGetStatusRequest {
+public class GetStatusRq {
     private int batchId;
 }

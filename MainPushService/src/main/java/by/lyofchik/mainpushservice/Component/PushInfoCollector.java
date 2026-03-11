@@ -1,11 +1,12 @@
 package by.lyofchik.mainpushservice.Component;
 
 import by.lyofchik.mainpushservice.Model.DTO.PushDTO;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotificationsRequest;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotificationRequest;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotificationsListRequest;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiListRq;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiRq;
 import by.lyofchik.mainpushservice.Model.Entity.PushInfo;
 import by.lyofchik.mainpushservice.Model.Mapper.PushDtoMapper;
+import by.lyofchik.mainpushservice.Model.Mapper.PushInfoMapper;
 import by.lyofchik.mainpushservice.Repository.PushInfoRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,24 +24,22 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Slf4j
 public class PushInfoCollector {
     private PushDtoMapper pushDtoMapper;
+    private PushInfoMapper pushInfoMapper;
     private PushInfoRepository pushInfoRepository;
-    private final Queue<PushDTO> queue = new ConcurrentLinkedQueue<>();
+    private final Queue<PushInfo> queue = new ConcurrentLinkedQueue<>();
     private static final int BATCH_SIZE = 1000;
     private static final int MAX_BATCHES = 10;
 
-    public void collect(AllNotificationsRequest request, String userLogin, UUID id) {
-        PushDTO pushDTO = pushDtoMapper.toPushDTO(request, userLogin, id);
-        queue.add(pushDTO);
+    public void collect(AllNotiRq request, String userLogin, UUID id) {
+        queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
-    public void collect(NotificationsListRequest request, String userLogin, UUID id) {
-        PushDTO pushDTO = pushDtoMapper.toPushDTO(request, userLogin, id);
-        queue.add(pushDTO);
+    public void collect(NotiListRq request, String userLogin, UUID id) {
+        queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
-    public void collect(NotificationRequest request, String userLogin, UUID id) {
-        PushDTO pushDTO = pushDtoMapper.toPushDTO(request, userLogin, id);
-        queue.add(pushDTO);
+    public void collect(NotiRq request, String userLogin, UUID id) {
+        queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
     @Scheduled(fixedDelay = 1000)
@@ -48,15 +47,13 @@ public class PushInfoCollector {
         if (queue.isEmpty()) return;
         int batchesCount = 0;
 
-        log.info("Sending push infos to DB - {}", queue.size());
-
         while (!queue.isEmpty() && batchesCount < MAX_BATCHES) {
-            List<PushDTO> batch = new ArrayList<>();
+            List<PushInfo> batch = new ArrayList<>();
 
             while (batch.size() < BATCH_SIZE) {
-                PushDTO pushDTO = queue.poll();
-                if (pushDTO == null) break;
-                batch.add(pushDTO);
+                PushInfo pi = queue.poll();
+                if (pi == null) break;
+                batch.add(pi);
             }
 
             if (!batch.isEmpty()) {
@@ -66,15 +63,12 @@ public class PushInfoCollector {
         }
     }
 
-    private void saveBatch(List<PushDTO> batch) {
+    private void saveBatch(List<PushInfo> batch) {
         try{
-            List<PushInfo> list = batch.stream()
-                    .map(pushDtoMapper::toPushInfo)
-                    .toList();
-
-            pushInfoRepository.saveAll(list);
+            pushInfoRepository.saveAll(batch);
+            log.info("Pushes saved successfully, current queue size - {}", queue.size());
         } catch (Exception e){
-            log.error("Ошибка сохранения в бд - {}",e.getMessage());
+            log.error("Error saving pushes - {}", e.getMessage());
             queue.addAll(batch);
         }
     }

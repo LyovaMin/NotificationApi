@@ -1,6 +1,6 @@
 package by.lyofchik.mainpushservice.Configuration;
 
-import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotificationResponse;
+import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotiRs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -18,11 +18,11 @@ import java.util.Map;
 public class KafkaProducerConfig {
 
     @Bean
-    public ProducerFactory<String, NotificationResponse> producerFactory(ObjectMapper objectMapper){
+    public ProducerFactory<String, NotiRs> producerFactory(ObjectMapper objectMapper){
         Map<String, Object> configProperties = new HashMap<>();
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 
-        JsonSerializer<NotificationResponse> serializer = new JsonSerializer<>(objectMapper);
+        JsonSerializer<NotiRs> serializer = new JsonSerializer<>(objectMapper);
 
         return new DefaultKafkaProducerFactory<>(
                 configProperties,
@@ -32,8 +32,8 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, NotificationResponse> kafkaTemplate(
-            ProducerFactory<String, NotificationResponse> producerFactory
+    public KafkaTemplate<String, NotiRs> kafkaTemplate(
+            ProducerFactory<String, NotiRs> producerFactory
     ){
         return new KafkaTemplate<>(producerFactory);
     }

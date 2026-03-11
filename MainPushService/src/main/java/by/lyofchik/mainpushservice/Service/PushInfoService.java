@@ -1,7 +1,7 @@
 package by.lyofchik.mainpushservice.Service;
 
-import by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo.PushGetStatusRequest;
-import by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo.PushUpdateStatusRequest;
+import by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo.GetStatusRq;
+import by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo.UpdateStatusRq;
 import by.lyofchik.mainpushservice.Model.DTO.Response.Response;
 import by.lyofchik.mainpushservice.Model.Entity.PushInfo;
 import by.lyofchik.mainpushservice.Repository.PushInfoRepository;
@@ -17,13 +17,13 @@ import java.util.List;
 public class PushInfoService {
     PushInfoRepository pushInfoRepository;
 
-    public Response getButchStatus(PushGetStatusRequest request) {
+    public Response getButchStatus(GetStatusRq request) {
         log.info("getButchStatus - {}", request);
         List<PushInfo> pushInfos = pushInfoRepository.findPushInfoByBatch(request.getBatchId());
         return Response.success(pushInfos);
     }
 
-    public Response updatePushStatus(PushUpdateStatusRequest request) {
+    public Response updatePushStatus(UpdateStatusRq request) {
         log.info("updatePushStatus - {}", request);
         PushInfo pushInfo = pushInfoRepository.findById(request.getPushId());
         pushInfo.setStatus(request.getPushStatus());

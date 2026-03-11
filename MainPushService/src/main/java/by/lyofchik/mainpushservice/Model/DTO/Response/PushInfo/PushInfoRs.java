@@ -4,7 +4,7 @@ import by.lyofchik.mainpushservice.Model.Enum.PushStatus;
 import lombok.Data;
 
 @Data
-public class PushInfoResponse {
+public class PushInfoRs {
     private PushStatus pushStatus;
     private int pushId;
 }

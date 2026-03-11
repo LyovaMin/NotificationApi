@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Builder
 @Data
-public class NotificationResponse {
+public class NotiRs {
     SubscriptionDto subscription;
     PushPayload payload;
     private int ttl;

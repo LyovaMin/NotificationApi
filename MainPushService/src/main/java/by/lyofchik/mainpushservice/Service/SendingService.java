@@ -1,24 +1,25 @@
 package by.lyofchik.mainpushservice.Service;
 
 import by.lyofchik.mainpushservice.Component.PushInfoCollector;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.CancelRequest;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotificationsRequest;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotificationRequest;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotificationsListRequest;
+import by.lyofchik.mainpushservice.Feign.WebPushServiceApi;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.CancelRq;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiListRq;
+import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiRq;
+import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotiRs;
 import by.lyofchik.mainpushservice.Model.DTO.Response.Response;
-import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotificationResponse;
 import by.lyofchik.mainpushservice.Model.Entity.Batch;
 import by.lyofchik.mainpushservice.Model.Entity.SubscriptionEntity;
 import by.lyofchik.mainpushservice.Model.Entity.User;
 import by.lyofchik.mainpushservice.Model.Enum.BatchStatus;
-import by.lyofchik.mainpushservice.Model.Mapper.NotificationRequestMapper;
-import by.lyofchik.mainpushservice.Model.Mapper.PushInfoMapper;
+import by.lyofchik.mainpushservice.Model.Mapper.NotiRqMapper;
 import by.lyofchik.mainpushservice.Repository.BatchRepository;
 import by.lyofchik.mainpushservice.Repository.SubscriptionRepository;
 import by.lyofchik.mainpushservice.Repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,14 +32,12 @@ public class SendingService {
     KafkaProducer kafkaProducer;
     UserRepository userRepository;
     SubscriptionRepository subscriptionRepository;
-    NotificationRequestMapper notificationMapper;
-    PushInfoMapper pushInfoMapper;
+    NotiRqMapper notificationMapper;
     BatchRepository batchRepository;
-    TemplatesService templatesService;
     PushInfoCollector pushInfoCollector;
+    WebPushServiceApi webPushServiceApi;
 
-    //todo single push with api
-    public Response sendPushToSingleUser(NotificationRequest request){
+    public Response sendPushToSingleUser(NotiRq request){
         log.info("sendPushToSingleUser - {}", request);
         if(request == null) {
             log.error("sendPushToSingleUser - request is null");
@@ -62,70 +61,94 @@ public class SendingService {
             UUID uuid = UUID.randomUUID();
             pushInfoCollector.collect(request, user.getLogin(), uuid);
 
-            NotificationResponse response = notificationMapper.toResponse(request, s, uuid);
-            kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
+            NotiRs response = notificationMapper.toResponse(request, s, uuid);
+            webPushServiceApi.push(response);
+            //kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
 
         return Response.success();
     }
 
-    public Response sendListPushes(NotificationsListRequest request){
+    @Transactional
+    public Response sendListPushes(NotiListRq request){
         log.info("Sending list pushes - {}", request);
         if(request == null) {
             log.error("sendListPushes - request is null");
             return Response.error();
         }
 
-        Stream<User> users = userRepository.findUsersByCompany(request.getCompanyId());
+        List<String> logins = request.getUsersLoginList().stream().toList();
+        Stream<SubscriptionEntity> subscriptions = subscriptionRepository
+                .findAllByUserLoginInAndChannelType(logins, request.getChannelType());
+
 
         Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
         batchRepository.save(batch);
 
-        users.forEach(user -> {
-            List<SubscriptionEntity> subscriptions = subscriptionRepository
-                    .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
-
-            subscriptions.forEach(s -> {
-                UUID uuid = UUID.randomUUID();
-                pushInfoCollector.collect(request, user.getLogin(), uuid);
-
-                NotificationResponse response = notificationMapper.toResponse(request, s, uuid);
-                kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
-            });
+        subscriptions.forEach(subscription -> {
+            UUID uuid = UUID.randomUUID();
+            pushInfoCollector.collect(request, subscription.getUserLogin(), uuid);
+            NotiRs response = notificationMapper.toResponse(request, subscription, uuid);
+            kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
+
+//        Stream<User> users = userRepository.findUsersByCompany(request.getCompanyId());
+//        users.forEach(user -> {
+//            List<SubscriptionEntity> subscriptions = subscriptionRepository
+//                    .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
+//
+//            subscriptions.forEach(s -> {
+//                UUID uuid = UUID.randomUUID();
+//                pushInfoCollector.collect(request, user.getLogin(), uuid);
+//
+//                NotificationResponse response = notificationMapper.toResponse(request, s, uuid);
+//                kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
+//            });
+//        });
 
         return Response.success();
     }
 
-    public Response sendAllPushes(AllNotificationsRequest request){
+    @Transactional
+    public Response sendAllPushes(AllNotiRq request){
         log.info("sendAllPushes - {}", request);
         if(request == null) {
             log.error("sendAllPushes - request is null");
             return Response.error();
         }
 
-        Stream<User> users = userRepository.findUsersByCompany(request.getCompanyId());
-
         Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
         batchRepository.save(batch);
 
-        users.forEach(user -> {
-            List<SubscriptionEntity> subscriptions = subscriptionRepository
-                    .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
+        Stream<SubscriptionEntity> subscriptions = subscriptionRepository.findAllByCompanyAndChannel(
+                request.getCompanyId(), request.getChannelType());
 
-            subscriptions.forEach(s -> {
-                UUID uuid = UUID.randomUUID();
-                pushInfoCollector.collect(request, user.getLogin(), uuid);
-
-                NotificationResponse response = notificationMapper.toResponse(request, s, uuid);
-                kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
-            });
+        subscriptions.forEach(subscription -> {
+            UUID uuid = UUID.randomUUID();
+            pushInfoCollector.collect(request, subscription.getUserLogin(), uuid);
+            NotiRs response = notificationMapper.toResponse(request, subscription, uuid);
+            kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
+
+//        Stream<User> users = userRepository.findUsersByCompany(request.getCompanyId());
+//
+//        users.forEach(user -> {
+//            List<SubscriptionEntity> subscriptions = subscriptionRepository
+//                    .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
+//
+//            subscriptions.forEach(s -> {
+//                UUID uuid = UUID.randomUUID();
+//                pushInfoCollector.collect(request, user.getLogin(), uuid);
+//
+//                NotificationResponse response = notificationMapper.toResponse(request, s, uuid);
+//                kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
+//            });
+//        });
 
         return Response.success();
     }
 
-    public Response cancelPushes(CancelRequest request) {
+    public Response cancelPushes(CancelRq request) {
         log.info("cancelPushes - {}", request);
         Batch batch = batchRepository.findById(request.getBatchId());
         if (batch == null) {
