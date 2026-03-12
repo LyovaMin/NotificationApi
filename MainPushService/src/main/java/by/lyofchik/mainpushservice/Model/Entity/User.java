@@ -18,5 +18,11 @@ public class User {
 
     @Column(name = "company_id", nullable = false)
     private Integer company;
+    @Column(name = "surname", length = 50)
+    private String surname;
+    @Column(name = "name", length = 50)
+    private String name;
+    @Column(name = "last_name", length = 50)
+    private String lastName;
 
 }

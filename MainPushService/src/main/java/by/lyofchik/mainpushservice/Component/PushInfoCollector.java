@@ -1,11 +1,9 @@
 package by.lyofchik.mainpushservice.Component;
 
-import by.lyofchik.mainpushservice.Model.DTO.PushDTO;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiListRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiRq;
 import by.lyofchik.mainpushservice.Model.Entity.PushInfo;
-import by.lyofchik.mainpushservice.Model.Mapper.PushDtoMapper;
 import by.lyofchik.mainpushservice.Model.Mapper.PushInfoMapper;
 import by.lyofchik.mainpushservice.Repository.PushInfoRepository;
 import lombok.AllArgsConstructor;
@@ -23,7 +21,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @AllArgsConstructor
 @Slf4j
 public class PushInfoCollector {
-    private PushDtoMapper pushDtoMapper;
     private PushInfoMapper pushInfoMapper;
     private PushInfoRepository pushInfoRepository;
     private final Queue<PushInfo> queue = new ConcurrentLinkedQueue<>();
@@ -31,19 +28,23 @@ public class PushInfoCollector {
     private static final int MAX_BATCHES = 10;
 
     public void collect(AllNotiRq request, String userLogin, UUID id) {
+        log.info("Collecting push - {}", id);
         queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
     public void collect(NotiListRq request, String userLogin, UUID id) {
+        log.info("Collecting push - {}", id);
         queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
     public void collect(NotiRq request, String userLogin, UUID id) {
+        log.info("Collecting push - {}", id);
         queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
     @Scheduled(fixedDelay = 1000)
     public void sendToDB() {
+        log.info("Sending push info to database...");
         if (queue.isEmpty()) return;
         int batchesCount = 0;
 
