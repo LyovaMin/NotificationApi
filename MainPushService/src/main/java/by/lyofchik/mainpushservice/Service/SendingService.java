@@ -118,7 +118,7 @@ public class SendingService {
         }
 
         Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
-        batchRepository.save(batch);
+        batchRepository.saveAndFlush(batch);
 
         Stream<SubscriptionEntity> subscriptions = subscriptionRepository.findAllByCompanyAndChannel(
                 request.getCompanyId(), request.getChannelType());
@@ -156,7 +156,7 @@ public class SendingService {
             return Response.error();
         }
         batch.setStatus(BatchStatus.CANCELLED);
-        batchRepository.save(batch);
+        batchRepository.saveAndFlush(batch);
 
         return Response.success();
     }

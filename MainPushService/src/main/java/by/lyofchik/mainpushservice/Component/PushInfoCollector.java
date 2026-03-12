@@ -44,8 +44,8 @@ public class PushInfoCollector {
 
     @Scheduled(fixedDelay = 1000)
     public void sendToDB() {
-        log.info("Sending push info to database...");
         if (queue.isEmpty()) return;
+        log.info("Sending push info to database...");
         int batchesCount = 0;
 
         while (!queue.isEmpty() && batchesCount < MAX_BATCHES) {
