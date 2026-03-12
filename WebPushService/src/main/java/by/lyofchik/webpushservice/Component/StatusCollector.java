@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -22,6 +23,7 @@ public class StatusCollector {
     private static final int MAX_BATCHES = 10;
 
     public void collect(UUID pushId, PushStatus status) {
+        log.info("Collecting status for pushId={}", pushId);
         StatusDto statusDto = new StatusDto(pushId, status);
         queue.add(statusDto);
     }
@@ -50,11 +52,15 @@ public class StatusCollector {
 
     private void saveBatch(List<StatusDto> batch) {
         try {
-            List<PushInfo> pushInfos = new ArrayList<>();
-            for (StatusDto statusDto : batch) {
-                pushInfos.add(pushInfoRepository.findById(statusDto.getPushId()));
-            }
-            pushInfoRepository.saveAll(pushInfos);
+            Map<PushStatus, List<UUID>> grouped = batch.stream()
+                    .collect(Collectors.groupingBy(
+                            StatusDto::getStatus,
+                            Collectors.mapping(StatusDto::getPushId, Collectors.toList())
+                    ));
+
+            grouped.forEach((status, ids) ->
+                    pushInfoRepository.updateStatusForIds(status, ids));
+
             log.info("Pushes saved successfully, current queue size - {}", queue.size());
         }  catch (Exception e) {
             log.error("Error saving pushes - {}", e.getMessage());
