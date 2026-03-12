@@ -24,7 +24,11 @@ public class RegistrationService {
             return Response.error();
         }
 
-        User user = new User(request.getLogin(), request.getCompanyId());
+        User user = User.builder()
+                .login(request.getLogin())
+                .company(request.getCompanyId())
+                .build();
+
         userRepository.save(user);
 
         return Response.success();
