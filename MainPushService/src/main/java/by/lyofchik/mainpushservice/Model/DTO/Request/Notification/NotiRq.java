@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class NotiRq {
     private String userLogin;
-    private int batchId;
     private int companyId;
     private PushPayload payload;
     private ChannelType channelType;

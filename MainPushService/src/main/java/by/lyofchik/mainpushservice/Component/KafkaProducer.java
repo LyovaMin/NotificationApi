@@ -1,4 +1,4 @@
-package by.lyofchik.mainpushservice.Service;
+package by.lyofchik.mainpushservice.Component;
 
 import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotiRs;
 import by.lyofchik.mainpushservice.Model.Enum.ChannelType;
@@ -6,9 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @AllArgsConstructor
 @Slf4j
 public class KafkaProducer {

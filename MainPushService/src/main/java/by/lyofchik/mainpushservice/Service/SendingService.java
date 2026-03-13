@@ -1,5 +1,7 @@
 package by.lyofchik.mainpushservice.Service;
 
+import by.lyofchik.mainpushservice.Component.ApiProducer;
+import by.lyofchik.mainpushservice.Component.KafkaProducer;
 import by.lyofchik.mainpushservice.Component.PushInfoCollector;
 import by.lyofchik.mainpushservice.Feign.WebPushServiceApi;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -35,7 +38,7 @@ public class SendingService {
     NotiRqMapper notificationMapper;
     BatchRepository batchRepository;
     PushInfoCollector pushInfoCollector;
-    WebPushServiceApi webPushServiceApi;
+    ApiProducer apiProducer;
 
     public Response sendPushToSingleUser(NotiRq request){
         log.info("sendPushToSingleUser - {}", request);
@@ -57,16 +60,19 @@ public class SendingService {
             return Response.error();
         }
 
+        List<UUID> uuids = new ArrayList<>();
+
         subscriptions.forEach(s -> {
             UUID uuid = UUID.randomUUID();
+            uuids.add(uuid);
             pushInfoCollector.collect(request, user.getLogin(), uuid);
 
             NotiRs response = notificationMapper.toResponse(request, s, uuid);
-            webPushServiceApi.push(response);
+            apiProducer.sendPush(response, request.getChannelType());
             //kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
 
-        return Response.success();
+        return Response.success(uuids);
     }
 
     @Transactional
@@ -83,7 +89,7 @@ public class SendingService {
 
 
         Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
-        batchRepository.save(batch);
+        batchRepository.saveAndFlush(batch);
 
         subscriptions.forEach(subscription -> {
             UUID uuid = UUID.randomUUID();
