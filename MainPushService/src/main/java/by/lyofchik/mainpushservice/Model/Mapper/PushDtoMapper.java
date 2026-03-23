@@ -30,7 +30,7 @@ public interface PushDtoMapper {
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "userLogin", source = "userLogin")
-    @Mapping(target = "batch", source = "request.batchId")
+    @Mapping(target = "batch", ignore = true)
     @Mapping(target = "pushPayload", expression = "java(request.getPayload().toJson())")
     @Mapping(target = "status", constant = "RECEIVED")
     PushDTO toPushDTO(NotiRq request, String userLogin, UUID id);

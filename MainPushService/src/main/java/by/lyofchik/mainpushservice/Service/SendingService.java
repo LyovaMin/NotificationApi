@@ -23,9 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -129,10 +127,13 @@ public class SendingService {
         Stream<SubscriptionEntity> subscriptions = subscriptionRepository.findAllByCompanyAndChannel(
                 request.getCompanyId(), request.getChannelType());
 
+        List<NotiRs> list =  new ArrayList<>();
+
         subscriptions.forEach(subscription -> {
             UUID uuid = UUID.randomUUID();
             pushInfoCollector.collect(request, subscription.getUserLogin(), uuid);
             NotiRs response = notificationMapper.toResponse(request, subscription, uuid);
+            list.add(response);
             kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
 
@@ -151,7 +152,7 @@ public class SendingService {
 //            });
 //        });
 
-        return Response.success();
+        return Response.success(list);
     }
 
     public Response cancelPushes(CancelRq request) {

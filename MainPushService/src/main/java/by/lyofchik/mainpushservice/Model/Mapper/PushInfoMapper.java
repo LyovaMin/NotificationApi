@@ -15,7 +15,7 @@ public interface PushInfoMapper {
 
     @Mapping(target = "status", constant = "RECEIVED")
     @Mapping(target = "userLogin", source = "userLogin")
-    @Mapping(target = "batch", source = "request.batchId")
+    @Mapping(target = "batch", ignore = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "pushPayload", expression = "java(request.getPayload().toJson())")
     PushInfo toPushInfo(NotiRq request, String userLogin, UUID id);
