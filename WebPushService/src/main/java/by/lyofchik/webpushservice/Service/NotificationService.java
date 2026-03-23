@@ -2,6 +2,7 @@ package by.lyofchik.webpushservice.Service;
 
 import by.lyofchik.webpushservice.Component.StatusCollector;
 import by.lyofchik.webpushservice.Model.DTO.NotificationRequest;
+import by.lyofchik.webpushservice.Model.DTO.PushPayload;
 import by.lyofchik.webpushservice.Model.Entity.Batch;
 import by.lyofchik.webpushservice.Model.Enum.BatchStatus;
 import by.lyofchik.webpushservice.Model.Enum.PushStatus;
@@ -55,8 +56,10 @@ public class NotificationService {
                 return;
             }
 
-            log.info("Start sending push - {}", Thread.currentThread().getName());
-            String payload = objectMapper.writeValueAsString(request.getPayload());
+            log.info("Start sending push to {} - {}", request.getPushId(), Thread.currentThread().getName());
+            PushPayload pushPayload = request.getPayload();
+            pushPayload.setPushId(request.getPushId());
+            String payload = objectMapper.writeValueAsString(pushPayload);
             Notification notification = Notification.builder()
                     .endpoint(request.getSubscription().getEndpoint())
                     .userPublicKey(request.getSubscription().getP256dh())
@@ -76,6 +79,7 @@ public class NotificationService {
                 log.info("Push sent with error - {}", request);
             }
         } catch (Exception e) {
+            statusCollector.collect(request.getPushId(), PushStatus.SENDING_ERROR);
             log.error(e.getMessage());
         }
     }

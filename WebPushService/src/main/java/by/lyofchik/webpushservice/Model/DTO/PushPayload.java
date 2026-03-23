@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Builder
 @Data
 @NoArgsConstructor
@@ -14,4 +16,5 @@ public class PushPayload{
     private String body;
     private String icon;
     private String url;
+    private UUID pushId;
 }
