@@ -22,8 +22,8 @@ public class Response {
 
     public static Response success() {
         return Response.builder()
-                .status("200")
-                .message("Success")
+                .status("202")
+                .message("Accepted")
                 .data(null)
                 .build();
     }
@@ -38,7 +38,7 @@ public class Response {
 
     public static Response error() {
         return Response.builder()
-                .status("Error")
+                .status("400")
                 .message("Error")
                 .data(null)
                 .build();

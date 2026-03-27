@@ -3,7 +3,6 @@ package by.lyofchik.mainpushservice.Service;
 import by.lyofchik.mainpushservice.Component.ApiProducer;
 import by.lyofchik.mainpushservice.Component.KafkaProducer;
 import by.lyofchik.mainpushservice.Component.PushInfoCollector;
-import by.lyofchik.mainpushservice.Feign.WebPushServiceApi;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.CancelRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiListRq;
@@ -81,10 +80,8 @@ public class SendingService {
             return Response.error();
         }
 
-        List<String> logins = request.getUsersLoginList().stream().toList();
         Stream<SubscriptionEntity> subscriptions = subscriptionRepository
-                .findAllByUserLoginInAndChannelType(logins, request.getChannelType());
-
+                .findAllByUserLoginInAndChannelType(request.getUsersLoginList(), request.getChannelType());
 
         Batch batch = new Batch(request.getBatchId(), BatchStatus.OK);
         batchRepository.saveAndFlush(batch);
@@ -95,20 +92,6 @@ public class SendingService {
             NotiRs response = notificationMapper.toResponse(request, subscription, uuid);
             kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
-
-//        Stream<User> users = userRepository.findUsersByCompany(request.getCompanyId());
-//        users.forEach(user -> {
-//            List<SubscriptionEntity> subscriptions = subscriptionRepository
-//                    .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
-//
-//            subscriptions.forEach(s -> {
-//                UUID uuid = UUID.randomUUID();
-//                pushInfoCollector.collect(request, user.getLogin(), uuid);
-//
-//                NotificationResponse response = notificationMapper.toResponse(request, s, uuid);
-//                kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
-//            });
-//        });
 
         return Response.success();
     }
@@ -136,21 +119,6 @@ public class SendingService {
             list.add(response);
             kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
-
-//        Stream<User> users = userRepository.findUsersByCompany(request.getCompanyId());
-//
-//        users.forEach(user -> {
-//            List<SubscriptionEntity> subscriptions = subscriptionRepository
-//                    .findSubscriptionEntitiesByUserLoginAndChannelType(user.getLogin(), request.getChannelType());
-//
-//            subscriptions.forEach(s -> {
-//                UUID uuid = UUID.randomUUID();
-//                pushInfoCollector.collect(request, user.getLogin(), uuid);
-//
-//                NotificationResponse response = notificationMapper.toResponse(request, s, uuid);
-//                kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
-//            });
-//        });
 
         return Response.success(list);
     }
