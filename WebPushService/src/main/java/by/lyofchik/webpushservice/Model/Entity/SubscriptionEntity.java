@@ -3,8 +3,6 @@ package by.lyofchik.webpushservice.Model.Entity;
 import by.lyofchik.webpushservice.Model.Enum.ChannelType;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
