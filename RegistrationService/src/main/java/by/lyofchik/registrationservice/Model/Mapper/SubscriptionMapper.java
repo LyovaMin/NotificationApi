@@ -9,8 +9,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface SubscriptionMapper {
     @Mapping(source = "request.subscription.endpoint", target = "endpoint")
-    @Mapping(source = "request.subscription.p256dh", target = "p256dh")
-    @Mapping(source = "request.subscription.auth", target = "authKey")
+    @Mapping(source = "request.subscription.keys.p256dh", target = "p256dh")
+    @Mapping(source = "request.subscription.keys.auth", target = "authKey")
     @Mapping(source = "request.channelType", target = "channelType")
     @Mapping(target = "isActive", constant = "true")
     @Mapping(target = "lastSeenAt", expression = "java(java.time.LocalDate.now())")

@@ -1,24 +1,31 @@
-const API_URL = 'http://192.168.100.34:8080/api/updateStatus';
+const API_URL = 'http://192.168.100.80:8080/api/updateStatus';
 
 async function updatePushStatus(pushId, status) {
-    console.log(`Отправка статуса: ${status} для ID: ${pushId}`);
+    console.log(`[SW] Попытка отправки статуса: ${status} для ID: ${pushId}`);
     if (!pushId) {
-        console.warn('pushId отсутствует, статус не будет обновлен');
+        console.warn('[SW] pushId отсутствует, пропуск сетевого запроса');
         return;
     }
 
     try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
             method: 'POST',
+            mode: 'cors',
+            keepalive: true, // Критично для завершения запроса после закрытия уведомления
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 pushId: pushId,
                 pushStatus: status
             })
         });
-        console.log(`Статус ${status} успешно отправлен`);
+
+        if (response.ok) {
+            console.log(`[SW] Статус ${status} успешно подтвержден сервером`);
+        } else {
+            console.error(`[SW] Сервер вернул ошибку ${response.status} при отправке ${status}`);
+        }
     } catch (e) {
-        console.error('Ошибка при fetch:', e);
+        console.error('[SW] Сетевая ошибка при fetch (проверьте доступность API):', e);
     }
 }
 
@@ -27,9 +34,9 @@ self.addEventListener('push', function(event) {
     if (event.data) {
         try {
             data = event.data.json();
-            console.log('Данные получены:', data);
+            console.log('[SW] Push получен:', data);
         } catch (e) {
-            console.error('Ошибка парсинга JSON в пуше');
+            console.error('[SW] Ошибка парсинга JSON в пуше');
         }
     }
 
@@ -38,7 +45,6 @@ self.addEventListener('push', function(event) {
     const options = {
         body: data.body || 'Сообщение',
         icon: '/icon.png',
-        // ВАЖНО: сохраняем эти данные ВНУТРИ уведомления для других событий
         data: {
             url: data.url || '/',
             pushId: pushId
@@ -54,8 +60,7 @@ self.addEventListener('push', function(event) {
 });
 
 self.addEventListener('notificationclick', function(event) {
-    console.log('Клик по уведомлению');
-    // Достаем сохраненные данные из уведомления
+    console.log('[SW] Клик по уведомлению');
     const notificationData = event.notification.data;
     const pushId = notificationData.pushId;
     const url = notificationData.url;
@@ -71,10 +76,16 @@ self.addEventListener('notificationclick', function(event) {
 });
 
 self.addEventListener('notificationclose', function(event) {
-    console.log('Уведомление закрыто');
-    const pushId = event.notification.data.pushId;
+    console.log('[SW] Уведомление закрыто пользователем (смахивание)');
 
-    event.waitUntil(
-        updatePushStatus(pushId, 'DISMISSED')
-    );
+    const notification = event.notification;
+    const pushId = (notification && notification.data) ? notification.data.pushId : null;
+
+    if (pushId) {
+        event.waitUntil(
+            updatePushStatus(pushId, 'DISMISSED')
+        );
+    } else {
+        console.warn('[SW] Данные pushId не найдены в событии закрытия');
+    }
 });

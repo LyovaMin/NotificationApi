@@ -5,7 +5,6 @@ const unsubBtn = document.getElementById('unsubscribeBtn');
 const loginInput = document.getElementById('loginInput');
 const statusText = document.getElementById('status');
 
-// Регистрация Service Worker
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
         .then(() => {
@@ -14,7 +13,6 @@ if ('serviceWorker' in navigator) {
         });
 }
 
-// Проверка текущего состояния подписки
 async function checkSubscription() {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
@@ -30,7 +28,6 @@ async function checkSubscription() {
     }
 }
 
-// Кнопка ПОДПИСАТЬСЯ
 subBtn.onclick = async () => {
     const login = loginInput.value.trim();
     if (!login) {
@@ -45,17 +42,10 @@ subBtn.onclick = async () => {
             applicationServerKey: PUBLIC_VAPID_KEY
         });
 
-        const subJson = subscription.toJSON();
-
-        // Формируем объект согласно твоему SubscriptionAddRequest
         const payload = {
             userLogin: login,
             channelType: "WEB",
-            subscription: {
-                endpoint: subJson.endpoint,
-                p256dh: subJson.keys.p256dh,
-                auth: subJson.keys.auth
-            }
+            subscription: subscription.toJSON()
         };
 
         await fetch('/subscription/add', {
@@ -72,7 +62,6 @@ subBtn.onclick = async () => {
     }
 };
 
-// Кнопка ОТПИСАТЬСЯ
 unsubBtn.onclick = async () => {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
@@ -80,7 +69,6 @@ unsubBtn.onclick = async () => {
     if (subscription) {
         const login = loginInput.value;
 
-        // Формируем объект согласно твоему SubscriptionDeleteRequest
         const deletePayload = {
             userLogin: login,
             subscriptionEndpoint: subscription.endpoint
