@@ -1,6 +1,6 @@
 package by.lyofchik.errorservice.Configuration;
 
-import by.lyofchik.errorservice.Model.NotiRs;
+import by.lyofchik.errorservice.Model.DTO.NotiRs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
