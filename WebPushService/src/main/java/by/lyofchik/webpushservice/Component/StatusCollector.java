@@ -51,14 +51,9 @@ public class StatusCollector {
 
     private void saveBatch(List<StatusDto> batch) {
         try {
-            Map<PushStatus, List<UUID>> grouped = batch.stream()
-                    .collect(Collectors.groupingBy(
-                            StatusDto::getStatus,
-                            Collectors.mapping(StatusDto::getPushId, Collectors.toList())
-                    ));
-
-            grouped.forEach((status, ids) ->
-                    pushInfoRepository.updateStatusForIds(status, ids));
+            for (StatusDto dto : batch) {
+                pushInfoRepository.updateStatusSecure(dto.getPushId(), dto.getStatus().toString());
+            }
 
             log.info("Pushes saved successfully, current queue size - {}", queue.size());
         }  catch (Exception e) {

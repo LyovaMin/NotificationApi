@@ -9,13 +9,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface PushInfoRepository extends JpaRepository<PushInfo, Integer> {
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
-    @Query("UPDATE PushInfo p SET p.status = :status WHERE p.id IN :ids")
-    void updateStatusForIds(@Param("status") PushStatus status, @Param("ids") List<UUID> ids);
+    @Query(value = "UPDATE dbo.push_info SET status = :newStatus " +
+            "WHERE id = :id " +
+            "AND status <> 'DELIVERED' " +
+            "AND status <> 'READ' " +
+            "AND status <> 'DISMISSED'", nativeQuery = true)
+    void updateStatusSecure(@Param("id") UUID id, @Param("newStatus") String newStatus);
 }
