@@ -29,15 +29,14 @@ public class PushInfoService {
     public Response updatePushStatus(UpdateStatusRq request) {
         log.info("updatePushStatus - {}", request);
 
-        PushInfo pi = pushInfoRepository.findById(request.getPushId()).orElse(null);
-        if (Objects.nonNull(pi)) {
-            pi.setStatus(request.getPushStatus());
-            pushInfoRepository.save(pi);
-            log.info("Status updated in DB to: {}", pi.getStatus());
+        int updatedStatuses = pushInfoRepository.updateStatus(request.getPushId(), request.getPushStatus());
+
+        if (updatedStatuses > 0) {
+            log.info("Status updated in DB to: {}", request.getPushStatus());
             return Response.success();
         }
 
-        pi = pushInfoCollector.findInQueue(request.getPushId());
+        PushInfo pi = pushInfoCollector.getPushInfo(request.getPushId());
         if (Objects.nonNull(pi)) {
             pi.setStatus(request.getPushStatus());
             log.info("Status updated in Queue to: {}", pi.getStatus());

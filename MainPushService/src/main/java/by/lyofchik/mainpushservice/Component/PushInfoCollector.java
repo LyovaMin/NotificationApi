@@ -11,11 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @AllArgsConstructor
@@ -23,53 +20,48 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class PushInfoCollector {
     private PushInfoMapper pushInfoMapper;
     private PushInfoRepository pushInfoRepository;
-    private final Queue<PushInfo> queue = new ConcurrentLinkedQueue<>();
+    private final Map<UUID, PushInfo> buffer = new ConcurrentHashMap<>();
     private static final int BATCH_SIZE = 1000;
     private static final int MAX_BATCHES = 10;
 
     public void collect(AllNotiRq request, String userLogin, UUID id) {
         log.info("Collecting push - {}", id);
-        queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
+        buffer.put(id, pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
     public void collect(NotiListRq request, String userLogin, UUID id) {
         log.info("Collecting push - {}", id);
-        queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
+        buffer.put(id, pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
     public void collect(NotiRq request, String userLogin, UUID id) {
         log.info("Collecting push - {}", id);
-        queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
+        buffer.put(id, pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
-    public void collect(PushInfo pushInfo){
-        log.info("Collecting push - {}", pushInfo);
-        queue.add(pushInfo);
-    }
-
-    public PushInfo findInQueue(UUID id) {
-        return queue.stream()
-                .filter(pi -> pi.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+    public PushInfo getPushInfo(UUID id) {
+        return buffer.get(id);
     }
 
     @Scheduled(fixedDelay = 1000)
     public void sendToDB() {
-        if (queue.isEmpty()) return;
+        if (buffer.isEmpty()) return;
         log.info("Sending push info to database...");
         int batchesCount = 0;
+        while (batchesCount < MAX_BATCHES && !buffer.isEmpty()) {
+            List<UUID> keysBatch = buffer.keySet().stream()
+                    .limit(BATCH_SIZE)
+                    .toList();
 
-        while (!queue.isEmpty() && batchesCount < MAX_BATCHES) {
             List<PushInfo> batch = new ArrayList<>();
-
-            while (batch.size() < BATCH_SIZE) {
-                PushInfo pi = queue.poll();
-                if (pi == null) break;
-                batch.add(pi);
+            for (UUID id : keysBatch) {
+                PushInfo pushInfo = buffer.remove(id);
+                if (Objects.nonNull(pushInfo)) {
+                    batch.add(pushInfo);
+                }
             }
 
-            if (!batch.isEmpty()) {
+            if(!batch.isEmpty()) {
                 saveBatch(batch);
                 batchesCount++;
             }
@@ -79,10 +71,10 @@ public class PushInfoCollector {
     private void saveBatch(List<PushInfo> batch) {
         try{
             pushInfoRepository.saveAllAndFlush(batch);
-            log.info("Pushes saved successfully, current queue size - {}", queue.size());
+            log.info("Pushes saved successfully, current queue size - {}", buffer.size());
         } catch (Exception e){
             log.error("Error saving pushes - {}", e.getMessage());
-            queue.addAll(batch);
+            batch.forEach(pi -> buffer.putIfAbsent(pi.getId(), pi));
         }
     }
 }
