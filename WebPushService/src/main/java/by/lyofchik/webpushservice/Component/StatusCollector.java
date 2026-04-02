@@ -1,7 +1,6 @@
 package by.lyofchik.webpushservice.Component;
 
 import by.lyofchik.webpushservice.Model.DTO.StatusDto;
-import by.lyofchik.webpushservice.Model.Entity.PushInfo;
 import by.lyofchik.webpushservice.Model.Enum.PushStatus;
 import by.lyofchik.webpushservice.Repository.PushInfoRepository;
 import lombok.AllArgsConstructor;
