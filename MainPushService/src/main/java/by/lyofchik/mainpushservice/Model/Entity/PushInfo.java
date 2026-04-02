@@ -2,13 +2,13 @@ package by.lyofchik.mainpushservice.Model.Entity;
 
 import by.lyofchik.mainpushservice.Model.Enum.PushStatus;
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "push_info", schema = "dbo")
 public class PushInfo {

@@ -42,6 +42,18 @@ public class PushInfoCollector {
         queue.add(pushInfoMapper.toPushInfo(request, userLogin, id));
     }
 
+    public void collect(PushInfo pushInfo){
+        log.info("Collecting push - {}", pushInfo);
+        queue.add(pushInfo);
+    }
+
+    public PushInfo findInQueue(UUID id) {
+        return queue.stream()
+                .filter(pi -> pi.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
     @Scheduled(fixedDelay = 1000)
     public void sendToDB() {
         if (queue.isEmpty()) return;
@@ -66,7 +78,7 @@ public class PushInfoCollector {
 
     private void saveBatch(List<PushInfo> batch) {
         try{
-            pushInfoRepository.saveAll(batch);
+            pushInfoRepository.saveAllAndFlush(batch);
             log.info("Pushes saved successfully, current queue size - {}", queue.size());
         } catch (Exception e){
             log.error("Error saving pushes - {}", e.getMessage());
