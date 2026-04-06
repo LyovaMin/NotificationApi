@@ -110,17 +110,22 @@ public class SendingService {
         Stream<SubscriptionEntity> subscriptions = subscriptionRepository.findAllByCompanyAndChannel(
                 request.getCompanyId(), request.getChannelType());
 
-        List<NotiRs> list =  new ArrayList<>();
+        Map<String, List<UUID>> map = new HashMap<>();
 
         subscriptions.forEach(subscription -> {
             UUID uuid = UUID.randomUUID();
             pushInfoCollector.collect(request, subscription.getUserLogin(), uuid);
             NotiRs response = notificationMapper.toResponse(request, subscription, uuid);
-            list.add(response);
+            if(map.containsKey(subscription.getUserLogin())) {
+                map.get(subscription.getUserLogin()).add(uuid);
+            } else{
+                map.put(subscription.getUserLogin(), new ArrayList<>());
+                map.get(subscription.getUserLogin()).add(uuid);
+            }
             kafkaProducer.sendNotificationToKafka(request.getChannelType(), response);
         });
 
-        return Response.success(list);
+        return Response.success(map);
     }
 
     public Response cancelPushes(CancelRq request) {
