@@ -1,6 +1,6 @@
 package by.lyofchik.errorservice.Configuration;
 
-import by.lyofchik.errorservice.Model.DTO.NotificationRequest;
+import by.lyofchik.errorservice.Model.DTO.ErrorRq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -19,12 +19,12 @@ import java.util.Map;
 public class KafkaConsumerConfig {
 
     @Bean
-    public ConsumerFactory<String, NotificationRequest> consumerFactory(ObjectMapper objectMapper){
+    public ConsumerFactory<String, ErrorRq> consumerFactory(ObjectMapper objectMapper){
         Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "warehouse-group-v3");
 
-        JsonDeserializer<NotificationRequest> deserializer = new JsonDeserializer<>(NotificationRequest.class, objectMapper);
+        JsonDeserializer<ErrorRq> deserializer = new JsonDeserializer<>(ErrorRq.class, objectMapper);
         deserializer.setUseTypeHeaders(false);
         deserializer.addTrustedPackages("*");
 
@@ -36,10 +36,10 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, NotificationRequest> containerFactory(
-            ConsumerFactory<String, NotificationRequest> consumerFactory
+    public ConcurrentKafkaListenerContainerFactory<String, ErrorRq> containerFactory(
+            ConsumerFactory<String, ErrorRq> consumerFactory
     ){
-        var containerFactory = new ConcurrentKafkaListenerContainerFactory<String, NotificationRequest>();
+        var containerFactory = new ConcurrentKafkaListenerContainerFactory<String, ErrorRq>();
         containerFactory.setConcurrency(5);
         containerFactory.setConsumerFactory(consumerFactory);
         return containerFactory;
