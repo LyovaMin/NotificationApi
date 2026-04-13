@@ -1,7 +1,7 @@
 package by.lyofchik.mainpushservice.Service;
 
 import by.lyofchik.mainpushservice.Component.ApiProducer;
-import by.lyofchik.mainpushservice.Component.KafkaProducer;
+import by.lyofchik.mainpushservice.Kafka.KafkaProducer;
 import by.lyofchik.mainpushservice.Component.PushInfoCollector;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.CancelRq;

@@ -1,4 +1,4 @@
-package by.lyofchik.mainpushservice.Component;
+package by.lyofchik.mainpushservice.Kafka;
 
 import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotiRs;
 import by.lyofchik.mainpushservice.Model.Enum.ChannelType;

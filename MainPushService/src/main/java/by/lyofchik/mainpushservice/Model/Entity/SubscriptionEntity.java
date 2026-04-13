@@ -33,6 +33,7 @@ public class SubscriptionEntity {
     @Column(name = "last_seen_at")
     private LocalDate lastSeenAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "channel_type", length = 15)
     private ChannelType channelType;
 
