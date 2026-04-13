@@ -30,6 +30,8 @@ public class NotificationService {
     private String PUBLIC_KEY;
     @Value("${vapid.private.key}")
     private String PRIVATE_KEY;
+    @Value("${topic.error}")
+    private String ERROR_SERVICE_CHANNEL;
     private PushService pushService;
     private final ObjectMapper objectMapper;
     private final SubscriptionMapper subscriptionMapper;
