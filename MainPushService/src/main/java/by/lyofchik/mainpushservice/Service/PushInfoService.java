@@ -4,7 +4,10 @@ import by.lyofchik.mainpushservice.Component.PushInfoCollector;
 import by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo.GetStatusRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo.UpdateStatusRq;
 import by.lyofchik.mainpushservice.Model.DTO.Response.Response;
+import by.lyofchik.mainpushservice.Model.Entity.Batch;
 import by.lyofchik.mainpushservice.Model.Entity.PushInfo;
+import by.lyofchik.mainpushservice.Model.Enum.BatchStatus;
+import by.lyofchik.mainpushservice.Repository.BatchRepository;
 import by.lyofchik.mainpushservice.Repository.PushInfoRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import java.util.Objects;
 public class PushInfoService {
     PushInfoRepository pushInfoRepository;
     PushInfoCollector pushInfoCollector;
+    BatchRepository batchRepository;
 
     public Response getButchStatus(GetStatusRq request) {
         log.info("getButchStatus - {}", request);
@@ -45,5 +49,18 @@ public class PushInfoService {
 
         log.warn("Push not found");
         return Response.error();
+    }
+
+    public Response cancelPushes(int batchId) {
+        log.info("cancelPushes - {}", batchId);
+        Batch batch = batchRepository.findById(batchId);
+        if (batch == null) {
+            log.error("cancelPushes - batch is null");
+            return Response.error();
+        }
+        batch.setStatus(BatchStatus.CANCELLED);
+        batchRepository.saveAndFlush(batch);
+
+        return Response.success();
     }
 }

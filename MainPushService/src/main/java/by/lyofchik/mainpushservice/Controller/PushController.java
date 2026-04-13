@@ -1,7 +1,6 @@
 package by.lyofchik.mainpushservice.Controller;
 
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.CancelRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiListRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.PushInfo.GetStatusRq;
@@ -10,10 +9,7 @@ import by.lyofchik.mainpushservice.Model.DTO.Response.Response;
 import by.lyofchik.mainpushservice.Service.PushInfoService;
 import by.lyofchik.mainpushservice.Service.SendingService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -38,8 +34,8 @@ public class PushController {
     }
 
     @PostMapping("/cancelPushes")
-    public Response cancelPushes(@RequestBody CancelRq request){
-        return sendingService.cancelPushes(request);
+    public Response cancelPushes(@RequestParam int batchId){
+        return pushInfoService.cancelPushes(batchId);
     }
 
     @PostMapping("/updateStatus")

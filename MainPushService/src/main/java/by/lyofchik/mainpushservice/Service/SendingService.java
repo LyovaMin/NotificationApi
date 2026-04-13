@@ -4,7 +4,6 @@ import by.lyofchik.mainpushservice.Component.ApiProducer;
 import by.lyofchik.mainpushservice.Kafka.KafkaProducer;
 import by.lyofchik.mainpushservice.Component.PushInfoCollector;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.AllNotiRq;
-import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.CancelRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiListRq;
 import by.lyofchik.mainpushservice.Model.DTO.Request.Notification.NotiRq;
 import by.lyofchik.mainpushservice.Model.DTO.Response.Notification.NotiRs;
@@ -126,18 +125,5 @@ public class SendingService {
         });
 
         return Response.success(map);
-    }
-
-    public Response cancelPushes(CancelRq request) {
-        log.info("cancelPushes - {}", request);
-        Batch batch = batchRepository.findById(request.getBatchId());
-        if (batch == null) {
-            log.error("cancelPushes - batch is null");
-            return Response.error();
-        }
-        batch.setStatus(BatchStatus.CANCELLED);
-        batchRepository.saveAndFlush(batch);
-
-        return Response.success();
     }
 }
