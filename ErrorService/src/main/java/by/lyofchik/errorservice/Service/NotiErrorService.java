@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -17,8 +17,8 @@ import java.util.Objects;
 public class NotiErrorService {
     @Value("${topic.registration}")
     private String registrationTopic;
-    @Value("${topic.main-service}")
-    private String mainServiceTopic;
+    private final Set<String> RETRIABLE_ERRORS = Utils.getRetriableErrors();
+    private final Set<String> SUBSCRIPTION_ERRORS = Utils.getSubscriptionErrors();
 
     private final KafkaProducer kafkaProducer;
 
@@ -27,11 +27,14 @@ public class NotiErrorService {
         String message = request.getErrorMessage();
         NotiRs response = new NotiRs(request.getEndpoint(), request.getPushId());
 
-        boolean isNumber = Utils.tryParse(code);
-        if (isNumber) {
-
+        if (RETRIABLE_ERRORS.contains(code)) {
+            kafkaProducer.send(response, String.valueOf(request.getChannelType()));
+        } else if (SUBSCRIPTION_ERRORS.contains(code)) {
+            kafkaProducer.send(response, registrationTopic);
         } else {
-
+            log.warn("Received unrecognized error code - {}, message - {}", code, message);
+            return;
         }
+        log.info("Received error code - {}, sent response - {}", code, response);
     }
 }
