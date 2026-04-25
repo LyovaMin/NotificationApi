@@ -30,12 +30,13 @@ public class ErrorService {
         if (RETRIABLE_ERRORS.contains(String.valueOf(code))) {
             log.warn("Retriable error for pushId {}: {} - {}. Setting status to SENDING_ERROR and triggering retry.", pushId, code, message);
             statusCollector.collect(pushId, PushStatus.SENDING_ERROR);
-            throw new RetriableException(); //("Retriable error from push service: " + code + " " + message);
+            throw new RetriableException("Retriable error from push service: " + code + " " + message);
 
         } else if (SUBSCRIPTION_ERRORS.contains(String.valueOf(code))) {
             log.warn("Subscription error for pushId {}: {} - {}. Unsubscribing and setting status to FAILED.", pushId, code, message);
             registrationServiceClient.unsubscribe(request.getSubscription());
             statusCollector.collect(pushId, PushStatus.FAILED);
+
         } else {
             log.warn("Unrecognized error for pushId {}: {} - {}. Setting status to FAILED.", pushId, code, message);
             statusCollector.collect(pushId, PushStatus.FAILED);

@@ -28,7 +28,7 @@ public class NotiConsumer {
             topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE)
     @KafkaListener(topics = "${topic.webpush}",
             containerFactory = "containerFactory")
-    public void consumeNotification(NotiRq request) throws RetriableException {
+    public void consumeNotification(NotiRq request) {
         log.info("Received push request - {}", request.getPushId());
         notificationService.sendPush(request);
     }

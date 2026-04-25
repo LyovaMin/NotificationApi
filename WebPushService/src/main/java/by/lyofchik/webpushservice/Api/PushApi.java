@@ -19,10 +19,6 @@ public class PushApi {
 
     @PostMapping
     public void push(@RequestBody NotiRq request) {
-        try{
-            notificationService.sendPush(request);
-        } catch (RetriableException e) {
-            log.error(e.getMessage());
-        }
+        notificationService.sendPush(request);
     }
 }
