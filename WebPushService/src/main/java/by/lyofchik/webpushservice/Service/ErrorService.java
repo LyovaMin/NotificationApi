@@ -6,6 +6,7 @@ import by.lyofchik.webpushservice.Model.DTO.NotiRq;
 import by.lyofchik.webpushservice.Model.Enum.PushStatus;
 import by.lyofchik.webpushservice.Service.Client.RegistrationServiceClient;
 import by.lyofchik.webpushservice.Utils.Utils;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -14,18 +15,14 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class ErrorService {
 
     private final Set<String> RETRIABLE_ERRORS = Utils.getRetriableErrors();
     private final Set<String> SUBSCRIPTION_ERRORS = Utils.getSubscriptionErrors();
 
-    private final StatusCollector statusCollector;
-    private final RegistrationServiceClient registrationServiceClient;
-
-    public ErrorService(StatusCollector statusCollector, RegistrationServiceClient registrationServiceClient) {
-        this.statusCollector = statusCollector;
-        this.registrationServiceClient = registrationServiceClient;
-    }
+    private StatusCollector statusCollector;
+    private RegistrationServiceClient registrationServiceClient;
 
     public void handle(NotiRq request, int code, String message) throws RetriableException {
         UUID pushId = request.getPushId();
