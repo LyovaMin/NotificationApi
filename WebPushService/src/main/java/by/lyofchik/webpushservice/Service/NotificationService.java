@@ -1,26 +1,38 @@
 package by.lyofchik.webpushservice.Service;
 
 import by.lyofchik.webpushservice.Component.StatusCollector;
-import by.lyofchik.webpushservice.Model.DTO.NotificationRequest;
+import by.lyofchik.webpushservice.Exception.RetriableException;
+import by.lyofchik.webpushservice.Model.DTO.NotiRq;
 import by.lyofchik.webpushservice.Model.DTO.PushPayload;
 import by.lyofchik.webpushservice.Model.Entity.Batch;
 import by.lyofchik.webpushservice.Model.Enum.BatchStatus;
 import by.lyofchik.webpushservice.Model.Enum.PushStatus;
-import by.lyofchik.webpushservice.Model.Mapper.SubscriptionMapper;
 import by.lyofchik.webpushservice.Repository.BatchRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.*;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.cookie.Cookie;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
+import org.apache.http.HttpResponse;
+import org.asynchttpclient.uri.Uri;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.Security;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -30,59 +42,54 @@ public class NotificationService {
     private String PUBLIC_KEY;
     @Value("${vapid.private.key}")
     private String PRIVATE_KEY;
-    @Value("${topic.error}")
-    private String ERROR_SERVICE_CHANNEL;
+
     private PushService pushService;
     private final ObjectMapper objectMapper;
-    private final SubscriptionMapper subscriptionMapper;
     private final BatchRepository batchRepository;
     private final StatusCollector statusCollector;
+    private final ErrorService errorService;
 
     @PostConstruct
     void init() throws GeneralSecurityException {
         Security.addProvider(new BouncyCastleProvider());
-        this.pushService = new PushService(PUBLIC_KEY, PRIVATE_KEY, "mailto:lyovademyanov@gmail.com");
+        pushService = new PushService(PUBLIC_KEY, PRIVATE_KEY, "mailto:lyovademyanov@gmail.com");
     }
 
-    @Async("push_executor")
-    public void sendPush(NotificationRequest request) {
+    public void sendPush(NotiRq request) throws RetriableException {
         try {
             Batch batch = batchRepository.findById(request.getBatchId());
-            if (batch == null) {
-                log.info("Batch not found");
-                return;
-            }
-            if (batch.getStatus() == BatchStatus.CANCELLED){
-                log.info("Cancelling push request - {}", request);
+            if (Objects.nonNull(batch) && batch.getStatus() == BatchStatus.CANCELLED) {
+                log.info("Batch {} is cancelled. Skipping pushId {}", request.getBatchId(), request.getPushId());
                 statusCollector.collect(request.getPushId(), PushStatus.CANCELED);
                 return;
             }
 
-            log.info("Start sending push to {} - {}", request.getPushId(), Thread.currentThread().getName());
+            log.info("Start sending push to {}", request.getPushId());
             PushPayload pushPayload = request.getPayload();
             pushPayload.setPushId(request.getPushId());
             String payload = objectMapper.writeValueAsString(pushPayload);
+
             Notification notification = Notification.builder()
                     .endpoint(request.getSubscription().getEndpoint())
                     .userPublicKey(request.getSubscription().getP256dh())
                     .userAuth(request.getSubscription().getAuth())
                     .payload(payload)
                     .ttl(request.getTtl())
-//                    .urgency(Urgency.HIGH)
                     .build();
-            var response = pushService.send(notification);
-            log.info("Push sending result - {}", response);
 
-            if(response.getStatusLine().getStatusCode() < 300){
+            var response = pushService.send(notification);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode >= 200 && statusCode < 300) {
                 statusCollector.collect(request.getPushId(), PushStatus.SENT);
-                log.info("Push sent successfully - {}", request);
-            }else {
-                statusCollector.collect(request.getPushId(), PushStatus.SENDING_ERROR);
-                log.info("Push sent with error - {}", request);
+                log.info("Push sent successfully to {}", request.getPushId());
+            } else {
+                errorService.handle(request, statusCode, response.getStatusLine().getReasonPhrase());
             }
-        } catch (Exception e) {
-            statusCollector.collect(request.getPushId(), PushStatus.SENDING_ERROR);
-            log.error(e.getMessage());
+
+        } catch (GeneralSecurityException | IOException | JoseException | ExecutionException | InterruptedException e) {
+            log.error("Internal error while sending pushId {}: {}", request.getPushId(), e.getMessage());
+            errorService.handle(request);
         }
     }
 

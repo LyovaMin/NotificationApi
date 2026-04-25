@@ -1,6 +1,6 @@
 package by.lyofchik.webpushservice.Configuration;
 
-import by.lyofchik.webpushservice.Model.DTO.NotificationRequest;
+import by.lyofchik.webpushservice.Model.DTO.NotiRq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -17,12 +17,12 @@ import java.util.*;
 public class KafkaConsumerConfig {
 
     @Bean
-    public ConsumerFactory<String, NotificationRequest> consumerFactory(ObjectMapper objectMapper){
+    public ConsumerFactory<String, NotiRq> consumerFactory(ObjectMapper objectMapper){
         Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "warehouse-group-v3");
 
-        JsonDeserializer<NotificationRequest> deserializer = new JsonDeserializer<>(NotificationRequest.class, objectMapper);
+        JsonDeserializer<NotiRq> deserializer = new JsonDeserializer<>(NotiRq.class, objectMapper);
         deserializer.setUseTypeHeaders(false);
         deserializer.addTrustedPackages("*");
 
@@ -34,10 +34,10 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, NotificationRequest> containerFactory(
-            ConsumerFactory<String, NotificationRequest> consumerFactory
+    public ConcurrentKafkaListenerContainerFactory<String, NotiRq> containerFactory(
+            ConsumerFactory<String, NotiRq> consumerFactory
     ){
-        var containerFactory = new ConcurrentKafkaListenerContainerFactory<String, NotificationRequest>();
+        var containerFactory = new ConcurrentKafkaListenerContainerFactory<String, NotiRq>();
         containerFactory.setConcurrency(5);
         containerFactory.setConsumerFactory(consumerFactory);
         return containerFactory;

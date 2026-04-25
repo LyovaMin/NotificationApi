@@ -11,7 +11,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationRequest {
+public class NotiRq {
     private SubscriptionDto subscription;
     private PushPayload payload;
     private int ttl;
