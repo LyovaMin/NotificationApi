@@ -2,6 +2,7 @@ package by.lyofchik.webpushservice.Kafka;
 
 import by.lyofchik.webpushservice.Exception.RetriableException;
 import by.lyofchik.webpushservice.Model.DTO.NotiRq;
+import by.lyofchik.webpushservice.Service.ErrorService;
 import by.lyofchik.webpushservice.Service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NotiConsumer {
     private final NotificationService notificationService;
+    private final ErrorService errorService;
 
     @RetryableTopic(
             attempts = "4",
@@ -35,6 +37,7 @@ public class NotiConsumer {
 
     @DltHandler
     public void dltHandler(NotiRq request, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        errorService.handle(request, 0, null);
         log.warn("Message from topic {} with pushId {} is sent to DLT", topic, request.getPushId());
     }
 }

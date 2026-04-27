@@ -1,6 +1,5 @@
 package by.lyofchik.webpushservice.Api;
 
-import by.lyofchik.webpushservice.Exception.RetriableException;
 import by.lyofchik.webpushservice.Model.DTO.NotiRq;
 import by.lyofchik.webpushservice.Service.NotificationService;
 import lombok.AllArgsConstructor;

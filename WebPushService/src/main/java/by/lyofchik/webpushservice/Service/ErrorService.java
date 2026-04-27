@@ -24,7 +24,7 @@ public class ErrorService {
     private StatusCollector statusCollector;
     private RegistrationServiceClient registrationServiceClient;
 
-    public void handle(NotiRq request, int code, String message) throws RetriableException {
+    public void handle(NotiRq request, int code, String message) {
         UUID pushId = request.getPushId();
 
         if (RETRIABLE_ERRORS.contains(String.valueOf(code))) {
@@ -43,7 +43,7 @@ public class ErrorService {
         }
     }
 
-    public void handle(NotiRq request) throws RetriableException {
+    public void handle(NotiRq request) {
         UUID pushId = request.getPushId();
         log.warn("Internal exception for pushId {}. Setting status to SENDING_ERROR and triggering retry.", pushId);
         statusCollector.collect(pushId, PushStatus.SENDING_ERROR);

@@ -9,28 +9,20 @@ import by.lyofchik.webpushservice.Model.Enum.BatchStatus;
 import by.lyofchik.webpushservice.Model.Enum.PushStatus;
 import by.lyofchik.webpushservice.Repository.BatchRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.cookie.Cookie;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
-import org.apache.http.HttpResponse;
-import org.asynchttpclient.uri.Uri;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.Security;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
@@ -55,7 +47,8 @@ public class NotificationService {
         pushService = new PushService(PUBLIC_KEY, PRIVATE_KEY, "mailto:lyovademyanov@gmail.com");
     }
 
-    public void sendPush(NotiRq request) throws RetriableException {
+    @Async("push_executor")
+    public void sendPush(NotiRq request) {
         try {
             Batch batch = batchRepository.findById(request.getBatchId());
             if (Objects.nonNull(batch) && batch.getStatus() == BatchStatus.CANCELLED) {
