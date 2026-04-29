@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
 @Entity
@@ -22,7 +20,7 @@ public class User {
     private String surname;
     @Column(name = "name", length = 50)
     private String name;
-    @Column(name = "last_name", length = 50)
-    private String lastName;
+    @Column(name = "middle_name", length = 50)
+    private String middleName;
 
 }

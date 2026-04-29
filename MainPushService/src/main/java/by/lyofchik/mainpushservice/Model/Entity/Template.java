@@ -13,8 +13,8 @@ import lombok.Setter;
 @Table(name = "templates", schema = "dbo")
 public class Template {
     @Id
-    @Column(name = "template_name", nullable = false, length = 50)
-    private String templateName;
+    @Column(name = "template_id", nullable = false, length = 50)
+    private Integer templateId;
 
     @Column(name = "title", length = 100)
     private String title;

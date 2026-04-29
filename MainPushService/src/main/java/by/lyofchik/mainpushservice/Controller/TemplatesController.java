@@ -1,13 +1,9 @@
 package by.lyofchik.mainpushservice.Controller;
 
-import by.lyofchik.mainpushservice.Model.DTO.Request.Templates.TemplatesRq;
 import by.lyofchik.mainpushservice.Model.DTO.Response.Response;
 import by.lyofchik.mainpushservice.Service.TemplatesService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -15,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class TemplatesController {
     TemplatesService templatesService;
 
-    @PostMapping("/templates")
-    public Response templates(@RequestBody TemplatesRq request){
-        return templatesService.templates(request);
+    @PostMapping("/templates/{companyId}")
+    public Response templates(@PathVariable int companyId){
+        return templatesService.templates(companyId);
     }
 }

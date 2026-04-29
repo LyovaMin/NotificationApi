@@ -14,4 +14,6 @@ public class NotiListRq {
     private List<String> usersLoginList;
     private int companyId;
     private int ttl;
+    private Integer templateId;
+    private List<String> data;
 }

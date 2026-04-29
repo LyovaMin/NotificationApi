@@ -15,9 +15,12 @@ import by.lyofchik.mainpushservice.Model.Enum.BatchStatus;
 import by.lyofchik.mainpushservice.Model.Mapper.NotiRqMapper;
 import by.lyofchik.mainpushservice.Repository.BatchRepository;
 import by.lyofchik.mainpushservice.Repository.SubscriptionRepository;
+import by.lyofchik.mainpushservice.Repository.TemplateRepository;
 import by.lyofchik.mainpushservice.Repository.UserRepository;
+import by.lyofchik.mainpushservice.Utils.Utils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.ap.shaded.freemarker.template.Template;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +50,15 @@ public class SendingService {
         if(user == null){
             log.error("sendPushToSingleUser - user not found");
             return Response.error();
+        }
+
+        if(request.getTemplateId() != null){
+            Utils.fillMapFromUser(user, request.getData());
+            String filledBody = Utils.fillTemplate(request.getTemplateId(), request.getData());
+            if(filledBody == null){
+                return Response.error();
+            }
+            request.getPayload().setBody(filledBody);
         }
 
         List<SubscriptionEntity> subscriptions = subscriptionRepository
